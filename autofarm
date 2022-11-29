@@ -698,7 +698,7 @@ Players.LocalPlayer.leaderstats.Raised.Changed:Connect(function()
         for i = 1, Players.LocalPlayer.leaderstats.Raised.value - RaisedC do
             task.wait(getgenv().settings.thanksDelay + 0.5)
             Players.LocalPlayer.Character.Humanoid:ChangeState('Jumping')
-            task.wait(0.7)
+            repeat task.wait(0.1) until Players.LocalPlayer.Character.Humanoid:GetState() ~= Enum.HumanoidStateType.Jumping
         end
     end)
      end
