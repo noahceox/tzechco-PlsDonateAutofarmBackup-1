@@ -95,8 +95,8 @@ if isfile("plsdonatesettings.txt") then
     end
 
 end
-local sNames = {"textUpdateToggle", "textUpdateDelay", "serverHopToggle", "serverHopDelay", "hexBox", "goalBox", "webhookToggle", "webhookBox", "danceChoice", "thanksMessage", "signToggle", "customBoothText", "signUpdateToggle", "signText", "signHexBox", "autoThanks", "autoBeg", "begMessage", "begDelay", "fpsLimit", "render", "thanksDelay", "vcServer"}
-local sValues = {true, 30, true, 30, "#32CD32", 5, false, "", "Disabled", {"Thank you", "Thanks!", "ty :)", "tysm!"}, false, "GOAL: $C / $G", false, "your text here", "#ffffff", true, false, {"Please donate", "I'm so close to my goal!", "donate to me", "please"}, 300, 60, false, 3, false}
+local sNames = {"textUpdateToggle", "textUpdateDelay", "serverHopToggle", "serverHopDelay", "hexBox", "goalBox", "webhookToggle", "webhookBox", "danceChoice", "thanksMessage", "signToggle", "customBoothText", "signUpdateToggle", "signText", "signHexBox", "autoThanks", "autoBeg", "begMessage", "begDelay", "fpsLimit", "render", "thanksDelay", "vcServer",'donationJump'}
+local sValues = {true, 30, true, 30, "#32CD32", 5, false, "", "Disabled", {"Thank you", "Thanks!", "ty :)", "tysm!"}, false, "GOAL: $C / $G", false, "your text here", "#ffffff", true, false, {"Please donate", "I'm so close to my goal!", "donate to me", "please"}, 300, 60, false, 3, false,false}
 if #getgenv().settings ~= sNames then
     for i, v in ipairs(sNames) do
         if getgenv().settings[v] == nil then
@@ -114,7 +114,7 @@ local function saveSettings()
         writefile('plsdonatesettings.txt', httpservice:JSONEncode(getgenv().settings))
     end
 end
-local function serverHop()
+function serverHop()
     local gameId = "8737602449"
     if vcEnabled and getgenv().settings.vcServer then
         gameId = "8943844393"
@@ -581,6 +581,12 @@ local render = otherTab:AddSwitch("Disable Rendering", function(bool)
         game:GetService("RunService"):Set3dRenderingEnabled(true)
     end
 end)
+
+otherTab:AddSwitch("Donation Jump",function(bool)
+    getgenv().settings.donationJump = bool
+    saveSettings()
+end)
+
 render:Set(getgenv().settings.render)
 if setfpscap and type(setfpscap) == "function" then
     local fpsLimit = otherTab:AddSlider("FPS Limit", function(x)
@@ -685,6 +691,12 @@ Players.LocalPlayer.leaderstats.Raised.Changed:Connect(function()
             webhook(tostring("💰 Somebody tipped ".. Players.LocalPlayer.leaderstats.Raised.value - RaisedC.. " Robux to ".. Players.LocalPlayer.DisplayName.. " (Total: " .. Players.LocalPlayer.leaderstats.Raised.value.. ")"))
         end
     end
+    if getgenv().settings.donationJump then
+        for i = 1, Players.LocalPlayer.leaderstats.Raised.value - RaisedC do
+            Players.LocalPlayer.Character.Humanoid:ChangeState('Jumping')
+            task.wait(0.7)
+        end
+     end
     RaisedC = Players.LocalPlayer.leaderstats.Raised.value
     if getgenv().settings.autoThanks then
         task.spawn(function()
@@ -692,6 +704,7 @@ Players.LocalPlayer.leaderstats.Raised.Changed:Connect(function()
             game.ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(getgenv().settings.thanksMessage[math.random(#getgenv().settings.thanksMessage)],"All")
         end)
     end
+    sound:Play()
     task.wait(getgenv().settings.textUpdateDelay)
     update()
 end)
