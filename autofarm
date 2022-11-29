@@ -704,7 +704,6 @@ Players.LocalPlayer.leaderstats.Raised.Changed:Connect(function()
             game.ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(getgenv().settings.thanksMessage[math.random(#getgenv().settings.thanksMessage)],"All")
         end)
     end
-    sound:Play()
     task.wait(getgenv().settings.textUpdateDelay)
     update()
 end)
