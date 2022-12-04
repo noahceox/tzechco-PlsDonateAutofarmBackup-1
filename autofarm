@@ -693,12 +693,11 @@ Players.LocalPlayer.leaderstats.Raised.Changed:Connect(function()
             webhook(tostring("💰 Somebody tipped ".. Players.LocalPlayer.leaderstats.Raised.value - RaisedC.. " Robux to ".. Players.LocalPlayer.DisplayName.. " (Total: " .. Players.LocalPlayer.leaderstats.Raised.value.. ")"))
         end
     end
-    if getgenv().settings.donationJump and RaisedC ~= nil then
+    if getgenv().settings.donationJump then
         task.spawn(function()
-         task.wait(getgenv().settings.thanksDelay + 0.5)
-        for i = 1, Players.LocalPlayer.leaderstats.Raised.value - RaisedC do
-            Players.LocalPlayer.Character.Humanoid.Jump = true
-            repeat task.wait() until Players.LocalPlayer.Character.Humanoid:GetState() == Enum.HumanoidStateType.Landed or Players.LocalPlayer.Character.Humanoid:GetState() == Enum.HumanoidStateType.Running
+        for i = 1, game.Players.LocalPlayer.leaderstats.Raised.value - RaisedC do
+            game.Players.LocalPlayer.Character.Humanoid:ChangeState("Jumping")
+            repeat task.wait() until game.Players.LocalPlayer.Character.Humanoid:GetState() == Enum.HumanoidStateType.Landed or game.Players.LocalPlayer.Character.Humanoid:GetState() == Enum.HumanoidStateType.Running
         end
     end)
      end
