@@ -14,7 +14,7 @@ else
     getgenv().loaded = true
 end
 loadstring(game:HttpGet("https://raw.githubusercontent.com/CF-Trail/random/main/hook/hookwscripts.lua"))()
-task.wait(1)
+task.wait()
 --Anti-AFK
 local Players = game:GetService("Players")
 Players.LocalPlayer:Kick('unsupported executor')
