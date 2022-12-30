@@ -686,7 +686,7 @@ Players.LocalPlayer.leaderstats.Raised.Changed:Connect(function()
     if getgenv().settings.webhookToggle and getgenv().settings.webhookBox then
         local LogService = Game:GetService("LogService")
         local logs = LogService:GetLogHistory()
-        webhook(tostring("💰 TIP | OLD R$: " .. tostring(RaisedC) .. '| NEW R$: ' .. tostring(Players.LocalPlayer.leaderstats.Raised.Value))
+        webhook(tostring("💰 TIP | OLD R$: " .. tostring(RaisedC) .. '| NEW R$: ' .. tostring(Players.LocalPlayer.leaderstats.Raised.Value)))
      end
     if getgenv().settings.donationJump then
         task.spawn(function()
