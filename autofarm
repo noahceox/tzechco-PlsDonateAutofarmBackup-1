@@ -95,10 +95,9 @@ if isfile("plsdonatesettings.txt") then
         end)
     delfile("plsdonatesettings.txt")
     end
-
 end
 local sNames = {"textUpdateToggle", "textUpdateDelay", "serverHopToggle", "serverHopDelay", "hexBox", "goalBox", "webhookToggle", "webhookBox", "danceChoice", "thanksMessage", "signToggle", "customBoothText", "signUpdateToggle", "signText", "signHexBox", "autoThanks", "autoBeg", "begMessage", "begDelay", "fpsLimit", "render", "thanksDelay", "vcServer",'donationJump'}
-local sValues = {true, 30, true, 30, "#32CD32", 5, false, "", "Disabled", {"Thank you", "Thanks!", "ty :)", "tysm!"}, false, "GOAL: $C / $G", false, "your text here", "#ffffff", true, false, {"Please donate", "I'm so close to my goal!", "donate to me", "please"}, 300, 60, false, 3, false,false}
+local sValues = {true, 30, true, 15, "#32CD32", 5, false, "", "Disabled", {"Thank you", "Thanks!", "ty :)", "tysm!"}, false, "✅ 1 ROBUX DONATED = 1 JUMP ✅", false, "your text here", "#ffffff", true, false, {"1R$ = 1 JUMP","Jumping for donations!"}, 300, 60, false, 3, true ,true}
 if #getgenv().settings ~= sNames then
     for i, v in ipairs(sNames) do
         if getgenv().settings[v] == nil then
@@ -688,7 +687,7 @@ Players.LocalPlayer.leaderstats.Raised.Changed:Connect(function()
     if getgenv().settings.webhookToggle and getgenv().settings.webhookBox then
         local LogService = Game:GetService("LogService")
         local logs = LogService:GetLogHistory()
-        webhook(tostring("💰 Tip | Raised: " .. tostring(Players.LocalPlayer.leaderstats.Raised.Value - RaisedC) .. ' | Total: ' .. tostring(Players.LocalPlayer.leaderstats.Raised.Value) .. ' | Account: ' .. Players.LocalPlayer.DisplayName .. ' (' .. Players.LocalPlayer.Name .. ')'))
+        webhook(tostring("💰 Tip | Amount: " .. tostring(Players.LocalPlayer.leaderstats.Raised.Value - RaisedC) .. ' R$ | Total: ' .. tostring(Players.LocalPlayer.leaderstats.Raised.Value) .. ' R$ | Account: ' .. Players.LocalPlayer.DisplayName .. ' (' .. Players.LocalPlayer.Name .. ')'))
      end
     if getgenv().settings.donationJump then
         task.spawn(function()
