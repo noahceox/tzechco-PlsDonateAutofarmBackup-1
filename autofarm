@@ -727,7 +727,7 @@ Players.LocalPlayer.leaderstats.Raised.Changed:Connect(function()
 end)
 update()
 if game:GetService("CoreGui").imgui.Windows.Window.Title.Text == "Loading..." then
-    game:GetService("CoreGui").imgui.Windows.Window.Title.Text = "pls donate / dotgg"
+    game:GetService("CoreGui").imgui.Windows.Window.Title.Text = "happy new year / dotgg"
 end
 while task.wait(getgenv().settings.serverHopDelay * 60) do
     if not hopTimer then
