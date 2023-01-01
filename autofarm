@@ -24,16 +24,12 @@ task.wait()
 --Anti-AFK
 local Players = game:GetService("Players")
 Players.LocalPlayer:Kick('unsupported executor')
-local connections = getconnections or get_signal_cons
+local connections = getconnections or get_signal_cons or nil
 task.spawn(function()
 	if connections then
-		for i, v in pairs(connections(Players.LocalPlayer.Idled)) do
-			if v["Disable"] then
-				v["Disable"](v)
-			elseif v["Disconnect"] then
-				v["Disconnect"](v)
-			end
-		end
+           for a,b in next, connections(game:GetService('Players').LocalPlayer.Idled) do
+	      b:Disable()
+           end
 	else
 		local vu = game:GetService("VirtualUser")
 		game:GetService("Players").LocalPlayer.Idled:connect(function()
