@@ -21,6 +21,7 @@ task.wait()
 local Players = game:GetService("Players")
 Players.LocalPlayer:Kick('unsupported executor')
 local connections = getconnections or get_signal_cons
+task.spawn(function()
 if connections then
 	for i,v in pairs(connections(Players.LocalPlayer.Idled)) do
 		if v["Disable"] then
@@ -30,12 +31,14 @@ if connections then
 		end
 	end
 else
-    Players.LocalPlayer.Idled:Connect(function()
-        local VirtualUser = game:GetService("VirtualUser")
-        VirtualUser:CaptureController()
-        VirtualUser:ClickButton2(Vector2.new())
-    end)
+local vu = game:GetService("VirtualUser")
+game:GetService("Players").LocalPlayer.Idled:connect(function()
+   vu:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+   wait(1)
+   vu:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+end)
 end
+end)
 
 --Variables
 local unclaimed = {}
