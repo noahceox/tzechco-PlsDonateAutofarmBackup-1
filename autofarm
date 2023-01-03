@@ -5,6 +5,16 @@
 	Removal of initial credits to the authors is prohibited.
 ]]
 
+if hookmetamethod then
+  local oldHook
+  oldHook = hookmetamethod(game, "__namecall", function(self, ...)
+	if getnamecallmethod() == "IsVoiceEnabledForUserIdAsync" then
+		return true
+	end
+	return oldHook(self, ...)
+  end)
+end
+
 --Wait until game loads
 repeat
 	wait()
