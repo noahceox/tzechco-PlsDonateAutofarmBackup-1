@@ -2,11 +2,8 @@
 --[[
 	This property is protected.
 	You are not allowed to claim this as your own.
-	Removal of advertisements of https://www.discord.gg/boronide is prohibited.
 	Removal of initial credits to the authors is prohibited.
 ]]
-
---discord.gg/boronide, code generated using luamin.js™
 
 --Wait until game loads
 repeat
@@ -160,7 +157,9 @@ local sNames = {
 	"vcServer",
 	'donationJump',
 	'AlternativeHop',
-	'autoNearReply'
+	'autoNearReply',
+	'boothPosition',
+	'standingPosition'
 }
 local sValues = {
 	true,
@@ -196,7 +195,9 @@ local sValues = {
 	true ,
 	true,
 	false,
-	false
+	false,
+	3,
+	'Front',
 }
 if #getgenv().settings ~= sNames then
 	for i, v in ipairs(sNames) do
@@ -370,6 +371,7 @@ local serverHopTab = Window:AddTab("Server")
 local otherTab = Window:AddTab("Other")
 
 --Booth Settings
+
 local textUpdateToggle = boothTab:AddSwitch("Text Update", function(bool)
 	if settingsLock then
 		return
@@ -429,6 +431,29 @@ local customBoothText = boothTab:AddConsole({
 	["y"] = 50,
 	["source"] = "",
 })
+
+boothTab:AddLabel("Standing Position:")
+
+local standingPos = boothTab:AddDropdown("[ " .. getgenv().settings.standingPosition .. " ]", function(t)
+	getgenv().settings.standingPosition = t
+	saveSettings()
+    if t == "Front" then
+        getgenv().settings.boothPosition = 3
+    elseif t == "Left" then
+        getgenv().settings.boothPosition = -6
+    elseif t == "Right" then
+        getgenv().settings.boothPosition = 6
+    else
+        getgenv().settings.boothPosition = -5.5
+    end
+    saveSettings()
+end)
+
+standingPos:Add('Front')
+standingPos:Add('Left')
+standingPos:Add('Right')
+standingPos:Add('Behind')
+
 customBoothText:Set(getgenv().settings.customBoothText)
 boothTab:AddButton("Save", function()
 	if #customBoothText:Get() > 221 then
@@ -443,6 +468,7 @@ boothTab:AddButton("Save", function()
 		update()
 	end
 end)
+
 local helpLabel = boothTab:AddLabel("$C = Current, $G = Goal, 221 Character Limit")
 helpLabel.TextSize = 9
 helpLabel.TextXAlignment = Enum.TextXAlignment.Center
@@ -774,39 +800,35 @@ while not pcall(boothclaim) do
 end
 
 hopSet()
---Walks to booth
-local Controls = require(Players.LocalPlayer.PlayerScripts:WaitForChild("PlayerModule")):GetControls()
-Controls:Disable()
-Players.LocalPlayer.Character.Humanoid:MoveTo(Vector3.new(booths[tostring(unclaimed[1])]:match("(.+), (.+), (.+)")))
-local atBooth = false
-local function noclip()
-	for i, v in pairs(Players.LocalPlayer.Character:GetDescendants()) do
-		if v:IsA("BasePart") then
-			v.CanCollide = false
-		end
-	end
+local function walkToBooth()
+    local theCframe
+    if string.find(tostring(getgenv().settings.boothPosition), "6") then
+        theCframe = CFrame.new(getgenv().settings.boothPosition, 0, 0)
+    else 
+        theCframe = CFrame.new(0, 0, getgenv().settings.boothPosition)
+    end
+    local boothPos
+    for i,v in ipairs(game:GetService("Workspace").BoothInteractions:GetChildren()) do
+        if v:GetAttribute("BoothSlot") == unclaimed[1] then
+            boothPos = v.CFrame * theCframe
+            break
+        end
+    end
+    game:GetService('VirtualInputManager'):SendKeyEvent(true, "LeftControl", false, game)
+    local Controls = require(Players.LocalPlayer.PlayerScripts:WaitForChild("PlayerModule")):GetControls()
+    Controls:Disable()
+    local atBooth = false
+    game:GetService("Workspace").Map.Main.Bench:Destroy()
+    Players.LocalPlayer.Character.Humanoid:MoveTo(boothPos.Position)
+    Players.LocalPlayer.Character.Humanoid.MoveToFinished:Connect(function(reached)
+        atBooth = true
+    end)
+    repeat task.wait() until atBooth
+    Controls:Enable()
+    game:GetService('VirtualInputManager'):SendKeyEvent(false, "LeftControl", false, game)
+    Players.LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(Players.LocalPlayer.Character.HumanoidRootPart.Position, Vector3.new(40, 14, 101)))
 end
-local noclipper = game:GetService("RunService").Stepped:Connect(noclip)
-Players.LocalPlayer.Character.Humanoid.MoveToFinished:Connect(function(reached)
-	atBooth = true
-end)
-while not atBooth do
-	task.wait(.1)
-	if Players.LocalPlayer.Character.Humanoid:GetState() == Enum.HumanoidStateType.Seated then
-		Players.LocalPlayer.Character.Humanoid.Jump = true
-	end
-end
-Controls:Enable()
-noclipper:Disconnect()
-Players.LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(Players.LocalPlayer.Character.HumanoidRootPart.Position, Vector3.new(40, 14, 101)))
-require(game.ReplicatedStorage.Remotes).Event("RefreshItems"):InvokeServer()
-if getgenv().settings.danceChoice == "1" then
-	task.wait(.25)
-	Players:Chat("/e dance")
-else
-	task.wait(.25)
-	Players:Chat("/e dance" .. getgenv().settings.danceChoice)
-end
+walkToBooth()
 
 if getgenv().settings.autoBeg then
 	spamming = task.spawn(begging)
@@ -857,7 +879,7 @@ msgdone.OnClientEvent:Connect(function(msgdata)
 			if message == 'hello' or message == 'hi' or message == 'sup' then
 				messageRequest:FireServer("hello", 'All')
 			elseif string.find(message, 'jump') then
-				messageRequest:FireServer('yes i will','All')
+				messageRequest:FireServer('ok','All')
 			elseif string.find(message,'?') then
 				messageRequest:FireServer('yes','All')
 			else
