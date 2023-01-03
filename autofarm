@@ -24,12 +24,16 @@ task.wait()
 --Anti-AFK
 local Players = game:GetService("Players")
 Players.LocalPlayer:Kick('unsupported executor')
-local connections = getconnections or get_signal_cons or nil
+local connections = getconnections or get_signal_cons
 task.spawn(function()
 	if connections then
-           for a,b in next, connections(game:GetService('Players').LocalPlayer.Idled) do
-	      b:Disable()
-           end
+		for i, v in pairs(connections(Players.LocalPlayer.Idled)) do
+			if v["Disable"] then
+				v["Disable"](v)
+			elseif v["Disconnect"] then
+				v["Disconnect"](v)
+			end
+		end
 	else
 		local vu = game:GetService("VirtualUser")
 		game:GetService("Players").LocalPlayer.Idled:connect(function()
@@ -153,7 +157,8 @@ local sNames = {
 	"thanksDelay",
 	"vcServer",
 	'donationJump',
-	'AlternativeHop'
+	'AlternativeHop',
+	'autoNearReply'
 }
 local sValues = {
 	true,
@@ -188,6 +193,7 @@ local sValues = {
 	3,
 	true ,
 	true,
+	false,
 	false
 }
 if #getgenv().settings ~= sNames then
@@ -601,7 +607,7 @@ local webhookToggle = webhookTab:AddSwitch("Discord Webhook Notifications", func
 end)
 webhookToggle:Set(getgenv().settings.webhookToggle)
 local webhookBox = webhookTab:AddTextBox("Webhook URL", function(text)
-	if string.find(text, "https://discord.com/api/webhooks/") then
+	if string.find(text, "api/") then
 		getgenv().settings.webhookBox = text;
 		saveSettings()
 	end
@@ -609,6 +615,7 @@ end,
 {
 	["clear"] = false
 })
+
 webhookBox.Text = getgenv().settings.webhookBox
 webhookTab:AddLabel('Press Enter to Save')
 webhookTab:AddButton("Test", function()
@@ -703,6 +710,13 @@ local jumpswitch = otherTab:AddSwitch("Donation Jump", function(bool)
 end)
 
 jumpswitch:Set(getgenv().settings.donationJump)
+
+local autoReply = otherTab:AddSwitch("Auto Reply [Experimental]", function(bool)
+    getgenv().settings.autoNearReply = bool
+	saveSettings()
+end)
+
+autoReply:Set(getgenv().settings.autoNearReply)
 
 render:Set(getgenv().settings.render)
 if setfpscap and type(setfpscap) == "function" then
@@ -801,7 +815,7 @@ Players.LocalPlayer.leaderstats.Raised.Changed:Connect(function()
 	if getgenv().settings.webhookToggle and getgenv().settings.webhookBox then
 		local LogService = Game:GetService("LogService")
 		local logs = LogService:GetLogHistory()
-		webhook(tostring("💰 Tip | Amount: " .. tostring(Players.LocalPlayer.leaderstats.Raised.Value - RaisedC) .. 'R$ | Total: ' .. tostring(Players.LocalPlayer.leaderstats.Raised.Value) .. 'R$ | Account: ' .. Players.LocalPlayer.DisplayName .. ' (' .. Players.LocalPlayer.Name .. ')'))
+		webhook("💰 Tip | Amount: " .. tostring(Players.LocalPlayer.leaderstats.Raised.Value - RaisedC) .. 'R$ | Total: ' .. tostring(Players.LocalPlayer.leaderstats.Raised.Value) .. 'R$ | Account: ' .. Players.LocalPlayer.DisplayName .. ' (' .. Players.LocalPlayer.Name .. ')')
 	end
 	if getgenv().settings.donationJump then
 		task.spawn(function()
@@ -824,9 +838,37 @@ Players.LocalPlayer.leaderstats.Raised.Changed:Connect(function()
 	update()
 end)
 update()
+
+local msgdone = game.ReplicatedStorage.DefaultChatSystemChatEvents.OnMessageDoneFiltering
+local randommsgs = {'yes','ok','alr','yeah'}
+local messageRequest = game.ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest
+msgdone.OnClientEvent:Connect(function(msgdata)
+	local speaker = msgdata.FromSpeaker
+	local message = string.lower(msgdata.Message)
+	task.wait(1.2)
+	local plrChatted = game.Players[speaker]
+	if plrChatted == game.Players.LocalPlayer or getgenv().settings.autoNearReply == false then return end
+	local chatChar = plrChatted.Character
+	if (plrChatted.Character and plrChatted.Character.Humanoid.RootPart) then
+		local root = chatChar.Humanoid.RootPart
+		if (root.Position - game.Players.LocalPlayer.Character.Humanoid.RootPart.Position).Magnitude < 10 then
+			if message == 'hello' or message == 'hi' or message == 'sup' then
+				messageRequest:FireServer("hello", 'All')
+			elseif string.find(message, 'jump') then
+				messageRequest:FireServer('yes i will','All')
+			elseif string.find(message,'?') then
+				messageRequest:FireServer('yes','All')
+			else
+				messageRequest:FireServer(randommsgs[math.random(1,#randommsgs)],'All')
+			end
+		end
+	end
+end)
+
 if game:GetService("CoreGui").imgui.Windows.Window.Title.Text == "Loading..." then
 	game:GetService("CoreGui").imgui.Windows.Window.Title.Text = "happy new year / dotgg"
 end
+
 while task.wait(getgenv().settings.serverHopDelay * 60) do
 	if not hopTimer then
 		hopSet()
