@@ -873,9 +873,9 @@ Players.LocalPlayer.leaderstats.Raised.Changed:Connect(function()
 end)
 update()
 
-local msgdone = game.ReplicatedStorage.DefaultChatSystemChatEvents.OnMessageDoneFiltering
+local msgdone = game:GetService("ReplicatedStorage"):WaitForChild("DefaultChatSystemChatEvents").OnMessageDoneFiltering
 local randommsgs = {'yes','ok','alr','yeah'}
-local messageRequest = game.ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest
+local messageRequest = game:GetService("ReplicatedStorage"):WaitForChild("DefaultChatSystemChatEvents").SayMessageRequest
 msgdone.OnClientEvent:Connect(function(msgdata)
 	local speaker = msgdata.FromSpeaker
 	local message = string.lower(msgdata.Message)
