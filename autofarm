@@ -100,10 +100,10 @@ local function claimGifts()
 		Players.LocalPlayer:WaitForChild("PlayerGui")
 		local guipath = Players.LocalPlayer.PlayerGui:WaitForChild("ScreenGui")
 		firesignal(guipath.GiftAlert.Buttons.Close["Activated"])
-		local count = require(game.ReplicatedStorage.Remotes).Event("UnclaimedDonationCount"):InvokeServer()
+		local count = require(game:GetService('ReplicatedStorage').Remotes).Event("UnclaimedDonationCount"):InvokeServer()
 		while count == nil do
 			task.wait(5)
-			count = require(game.ReplicatedStorage.Remotes).Event("UnclaimedDonationCount"):InvokeServer()
+			count = require(game:GetService('ReplicatedStorage').Remotes).Event("UnclaimedDonationCount"):InvokeServer()
 		end
 		if count then
 			local ud = {}
@@ -133,7 +133,7 @@ if isfile("plsdonatesettings.txt") then
 	if er ~= nil then
 		task.spawn(function()
 			errMsg = Instance.new("Hint")
-			errMsg.Parent = game.workspace
+			errMsg.Parent = workspace
 			errMsg.Text = tostring("Settings reset due to error: " .. er)
 			task.wait(15)
 			errMsg:Destroy()
@@ -169,7 +169,8 @@ local sNames = {
 	'AlternativeHop',
 	'autoNearReply',
 	'boothPosition',
-	'standingPosition'
+	'standingPosition',
+	'AnonymousMode'
 }
 local sValues = {
 	true,
@@ -208,6 +209,7 @@ local sValues = {
 	false,
 	3,
 	'Front',
+	false,
 }
 if #getgenv().settings ~= sNames then
 	for i, v in ipairs(sNames) do
@@ -324,31 +326,31 @@ local function update()
 		local myBooth = Players.LocalPlayer.PlayerGui.MapUIContainer.MapUI.BoothUI:FindFirstChild(tostring("BoothUI" .. unclaimed[1]))
 		if myBooth.Sign.TextLabel.Text ~= boothText then
 			if string.find(myBooth.Sign.TextLabel.Text, "# #") or string.find(myBooth.Sign.TextLabel.Text, "##") then
-				require(game.ReplicatedStorage.Remotes).Event("SetBoothText"):FireServer("your text here", "booth")
+				require(game:GetService("ReplicatedStorage").Remotes).Event("SetBoothText"):FireServer("your text here", "booth")
 				task.wait(3)
 			end
-			require(game.ReplicatedStorage.Remotes).Event("SetBoothText"):FireServer(boothText, "booth")
+			require(game:GetService('ReplicatedStorage').Remotes).Event("SetBoothText"):FireServer(boothText, "booth")
 			task.wait(3)
 		end
 	end
 	if getgenv().settings.signToggle and getgenv().settings.signUpdateToggle and getgenv().settings.signText and signPass then
-		local currentSign = game.Players.LocalPlayer.Character.DonateSign.TextSign.SurfaceGui.TextLabel.Text
+		local currentSign = game:GetService('Players').LocalPlayer.Character.DonateSign.TextSign.SurfaceGui.TextLabel.Text
 		text = string.gsub(getgenv().settings.signText, "$C", current)
 		text = string.gsub (text, "$G", goal)
 		signText = tostring('<font color="' .. getgenv().settings.signHexBox .. '">' .. text .. '</font>')
 		if currentSign ~= signText then
 			if string.find(currentSign, "# #") or string.find(currentSign, "##") then
-				require(game.ReplicatedStorage.Remotes).Event("SetBoothText"):FireServer("your text here", "sign")
+				require(game:GetService('ReplicatedStorage').Remotes).Event("SetBoothText"):FireServer("your text here", "sign")
 				task.wait(3)
 			end
-			require(game.ReplicatedStorage.Remotes).Event("SetBoothText"):FireServer(signText, "sign")
+			require(game:GetService('ReplicatedStorage').Remotes).Event("SetBoothText"):FireServer(signText, "sign")
 		end
 	end
 end
 
 local function begging()
 	while getgenv().settings.autoBeg do
-		game.ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(getgenv().settings.begMessage[math.random(#getgenv().settings.begMessage)], "All")
+		game:GetService('ReplicatedStorage').DefaultChatSystemChatEvents.SayMessageRequest:FireServer(getgenv().settings.begMessage[math.random(#getgenv().settings.begMessage)], "All")
 		task.wait(getgenv().settings.begDelay)
 	end
 end
@@ -756,6 +758,22 @@ end)
 
 autoReply:Set(getgenv().settings.autoNearReply)
 
+local anMode = otherTab:AddSwitch('Anonymous Mode',function(bool)
+	getgenv().settings.AnonymousMode = bool
+	if getgenv().settings.AnonymousMode then
+		require(game:GetService('ReplicatedStorage').Remotes).Event('SetDonatedVisibility'):FireServer(false)
+	else
+		require(game:GetService('ReplicatedStorage').Remotes).Event('SetDonatedVisibility'):FireServer(true)
+	 end
+	saveSettings()
+end)
+
+anMode:Set(getgenv().settings.AnonymousMode)
+
+if getgenv().settings.AnonymousMode then
+   require(game:GetService('ReplicatedStorage').Remotes).Event('SetDonatedVisibility'):FireServer(false)
+end
+
 render:Set(getgenv().settings.render)
 if setfpscap and type(setfpscap) == "function" then
 	local fpsLimit = otherTab:AddSlider("FPS Limit", function(x)
@@ -792,7 +810,7 @@ end
 local claimCount = #unclaimed
 --Claim booth function
 local function boothclaim()
-	require(game.ReplicatedStorage.Remotes).Event("ClaimBooth"):InvokeServer(unclaimed[1])
+	require(game:GetService('ReplicatedStorage').Remotes).Event("ClaimBooth"):InvokeServer(unclaimed[1])
 	if not string.find(Players.LocalPlayer.PlayerGui.MapUIContainer.MapUI.BoothUI:FindFirstChild(tostring("BoothUI" .. unclaimed[1])).Details.Owner.Text, Players.LocalPlayer.DisplayName) then
 		task.wait(1)
 		if not string.find(Players.LocalPlayer.PlayerGui.MapUIContainer.MapUI.BoothUI:FindFirstChild(tostring("BoothUI" .. unclaimed[1])).Details.Owner.Text, Players.LocalPlayer.DisplayName) then
@@ -843,6 +861,7 @@ walkToBooth()
 if getgenv().settings.autoBeg then
 	spamming = task.spawn(begging)
 end
+
 local RaisedC = Players.LocalPlayer.leaderstats.Raised.value
 Players.LocalPlayer.leaderstats.Raised.Changed:Connect(function()
 	hopSet()
@@ -853,11 +872,11 @@ Players.LocalPlayer.leaderstats.Raised.Changed:Connect(function()
 	end
 	if getgenv().settings.donationJump then
 		task.spawn(function()
-			for i = 1, game.Players.LocalPlayer.leaderstats.Raised.value - RaisedC do
-				game.Players.LocalPlayer.Character.Humanoid:ChangeState("Jumping")
+			for i = 1, game:GetService('Players').LocalPlayer.leaderstats.Raised.value - RaisedC do
+				game:GetService('Players').LocalPlayer.Character.Humanoid:ChangeState("Jumping")
 				repeat
 					task.wait()
-				until game.Players.LocalPlayer.Character.Humanoid:GetState() == Enum.HumanoidStateType.Landed or game.Players.LocalPlayer.Character.Humanoid:GetState() == Enum.HumanoidStateType.Running
+				until game:GetService('Players').LocalPlayer.Character.Humanoid:GetState() == Enum.HumanoidStateType.Landed or game:GetService('Players').LocalPlayer.Character.Humanoid:GetState() == Enum.HumanoidStateType.Running
 			end
 		end)
 	end
@@ -865,7 +884,7 @@ Players.LocalPlayer.leaderstats.Raised.Changed:Connect(function()
 	if getgenv().settings.autoThanks then
 		task.spawn(function()
 			task.wait(getgenv().settings.thanksDelay)
-			game.ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(getgenv().settings.thanksMessage[math.random(#getgenv().settings.thanksMessage)], "All")
+			game:GetService('ReplicatedStorage').DefaultChatSystemChatEvents.SayMessageRequest:FireServer(getgenv().settings.thanksMessage[math.random(#getgenv().settings.thanksMessage)], "All")
 		end)
 	end
 	task.wait(getgenv().settings.textUpdateDelay)
@@ -873,19 +892,19 @@ Players.LocalPlayer.leaderstats.Raised.Changed:Connect(function()
 end)
 update()
 
-local msgdone = game:GetService("ReplicatedStorage"):WaitForChild("DefaultChatSystemChatEvents").OnMessageDoneFiltering
+local msgdone = game:GetService('ReplicatedStorage').DefaultChatSystemChatEvents.OnMessageDoneFiltering
 local randommsgs = {'yes','ok','alr','yeah'}
-local messageRequest = game:GetService("ReplicatedStorage"):WaitForChild("DefaultChatSystemChatEvents").SayMessageRequest
+local messageRequest = game:GetService('ReplicatedStorage').DefaultChatSystemChatEvents.SayMessageRequest
 msgdone.OnClientEvent:Connect(function(msgdata)
 	local speaker = msgdata.FromSpeaker
 	local message = string.lower(msgdata.Message)
 	task.wait(1.2)
-	local plrChatted = game.Players[speaker]
-	if plrChatted == game.Players.LocalPlayer or getgenv().settings.autoNearReply == false then return end
+	local plrChatted = game:GetService('Players')[speaker]
+	if plrChatted == game:GetService('Players').LocalPlayer or getgenv().settings.autoNearReply == false then return end
 	local chatChar = plrChatted.Character
 	if (plrChatted.Character and plrChatted.Character.Humanoid.RootPart) then
 		local root = chatChar.Humanoid.RootPart
-		if (root.Position - game.Players.LocalPlayer.Character.Humanoid.RootPart.Position).Magnitude < 10 then
+		if (root.Position - game:GetService('Players').LocalPlayer.Character.Humanoid.RootPart.Position).Magnitude < 10 then
 			if message == 'hello' or message == 'hi' or message == 'sup' then
 				messageRequest:FireServer("hello", 'All')
 			elseif string.find(message, 'jump') then
