@@ -899,8 +899,8 @@ msgdone.OnClientEvent:Connect(function(msgdata)
 	local speaker = msgdata.FromSpeaker
 	local message = string.lower(msgdata.Message)
 	task.wait(1.2)
-	local plrChatted = game:GetService('Players')[speaker]
-	if plrChatted == game:GetService('Players').LocalPlayer or getgenv().settings.autoNearReply == false then return end
+	local plrChatted = game:GetService('Players')[speaker] or nil
+	if (plrChatted and plrChatted == game:GetService('Players').LocalPlayer) or getgenv().settings.autoNearReply == false or not plrChatted then return end
 	local chatChar = plrChatted.Character
 	if (plrChatted.Character and plrChatted.Character.Humanoid.RootPart) then
 		local root = chatChar.Humanoid.RootPart
