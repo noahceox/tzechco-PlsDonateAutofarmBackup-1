@@ -380,7 +380,7 @@ local chatTab = Window:AddTab("Chat")
 local webhookTab = Window:AddTab("Webhook")
 local serverHopTab = Window:AddTab("Server")
 local otherTab = Window:AddTab("Other")
-local bThemes = game:GetService("Players").LocalPlayer.PlayerGui.ScreenGui.BoothSettings.ScrollingFrame.ChangeTheme.Themes
+local bThemes = game:GetService("Players").LocalPlayer.PlayerGui:WaitForChild("ScreenGui"):WaitForChild("BoothSettings"):WaitForChild("ScrollingFrame"):WaitForChild("ChangeTheme"):WaitForChild("Themes")
   
   --Booth Settings
 local textUpdateToggle = boothTab:AddSwitch("Text Update", function(bool)
