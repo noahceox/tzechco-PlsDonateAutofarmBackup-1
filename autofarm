@@ -686,53 +686,6 @@ end,
 
 serverHopDelay:Set((getgenv().settings.serverHopDelay / 120) * 100)
 
-local minPlrs = serverHopTab:AddSlider('Minimum players',function(swqe)
-	if settingsLock then return end
-	getgenv().settings.minimumPlayers = swqe
-	coroutine.wrap(slider)(getgenv().settings.minimumPlayers, "minimumPlayers")
-end,
-  {
-	['min'] = 1,
-	['max'] = 28
-})
-
-
-minPlrs:Set(getgenv().settings.minimumPlayers or 1)
-
-local minDonated = serverHopTab:AddSlider('Minimum donated',function(swqex)
-	if settingsLock then return end
-	getgenv().settings.minimumPlayers = swqex
-	coroutine.wrap(slider)(getgenv().settings.minimumDonated, "minimumDonated")
-end,
-  {
-	['min'] = 0,
-	['max'] = 20000
-})
-
-minDonated:Set(getgenv().settings.minimumDonated or 0)
-
-task.spawn(function()
-	local werwe = false
-	for i,v in next, Players:GetPlayers() do
-		if (v:FindFirstChild('leaderstats') and v.leaderstats:FindFirstChild('Donated')) then
-			if v.leaderstats.Donated.Value > getgenv().settings.minimumDonated and v ~= Players.LocalPlayer then
-				werwe = true
-			end
-		end
-	end
-	if werwe == false then
-		serverHop()
-	end
-end)
-
-task.spawn(function()
-	local sadwe = false
-	local playersAmount = #Players:GetPlayers()
-    if playersAmount < getgenv().settings.minimumPlayers then
-		serverHop()
-	end
-end)
-
 if vcEnabled then
 	local vcToggle = serverHopTab:AddSwitch("Voice Chat Servers", function(bool)
 		if settingsLock then
