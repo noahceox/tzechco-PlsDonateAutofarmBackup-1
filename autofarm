@@ -896,7 +896,7 @@ local msgdone = game:GetService('ReplicatedStorage').DefaultChatSystemChatEvents
 local randommsgs = {'yes','ok','alr','yeah'}
 local messageRequest = game:GetService('ReplicatedStorage').DefaultChatSystemChatEvents.SayMessageRequest
 msgdone.OnClientEvent:Connect(function(msgdata)
-	local speaker = msgdata.FromSpeaker
+	local speaker = tostring(msgdata.FromSpeaker)
 	local message = string.lower(msgdata.Message)
 	task.wait(1.2)
 	local plrChatted = game:GetService('Players')[speaker] or nil
