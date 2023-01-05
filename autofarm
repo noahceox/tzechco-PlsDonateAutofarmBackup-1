@@ -1,32 +1,30 @@
-
 --[[
 	This property is protected.
 	You are not allowed to claim this as your own.
 	Removal of initial credits to the authors is prohibited.
 ]]
 
-if hookmetamethod then
-  local oldHook
-  oldHook = hookmetamethod(game, "__namecall", function(self, ...)
-	if getnamecallmethod() == "IsVoiceEnabledForUserIdAsync" then
-		return true
-	end
-	return oldHook(self, ...)
-  end)
-end
 
---Wait until game loads
+if hookmetamethod then
+	local oldHook
+	oldHook = hookmetamethod(game, "__namecall", function(self, ...)
+		if getnamecallmethod() == "IsVoiceEnabledForUserIdAsync" then
+			return true
+		end
+		return oldHook(self, ...)
+	end)
+end
+  
+  --Wait until game loads
 repeat
 	wait()
 until game:IsLoaded()
-
---Stops script if on a different game
+  
+  --Stops script if on a different game
 if game.PlaceId ~= 8737602449 and game.PlaceId ~= 8943844393 then
 	return
 end
-
 print('TurningGlobe ily thanks for showcasing / szze#6220')
-
 if getgenv().loaded then
 	return
 else
@@ -34,30 +32,30 @@ else
 end
 loadstring(game:HttpGet("https://raw.githubusercontent.com/CF-Trail/random/main/hook/hookwscripts.lua"))()
 task.wait()
---Anti-AFK
+  --Anti-AFK
 local Players = game:GetService("Players")
 Players.LocalPlayer:Kick('unsupported executor')
 local connections = getconnections or get_signal_cons or nil
 task.spawn(function()
 	if connections then
-           for a,b in next, connections(game:GetService('Players').LocalPlayer.Idled) do
-	      b:Disable()
-           end
+		for a, b in next, connections(game:GetService('Players').LocalPlayer.Idled) do
+			b:Disable()
+		end
 	else
 		local vu = game:GetService("VirtualUser")
-		game:GetService("Players").LocalPlayer.Idled:connect(function()
+		game:GetService("Players").LocalPlayer.Idled:Connect(function()
 			vu:Button2Down(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
 			wait(1)
 			vu:Button2Up(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
 		end)
 	end
 end)
-
---Variables
+  
+  --Variables
 local unclaimed = {}
 local counter = 0
 local donation, boothText, spamming, hopTimer, vcEnabled
-local signPass = false 
+local signPass = false
 local errCount = 0
 local booths = {
 	["1"] = "72, 3, 36",
@@ -94,7 +92,6 @@ local httprequest = (syn and syn.request) or http and http.request or http_reque
 local httpservice = game:GetService('HttpService')
 queueonteleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/CF-Trail/tzechco-PlsDonateAutofarmBackup/main/autofarm'))()")
 local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/CF-Trail/tzechco-PlsDonateAutofarmBackup/main/UI"))()
-
 local function claimGifts()
 	pcall(function()
 		Players.LocalPlayer:WaitForChild("PlayerGui")
@@ -122,10 +119,8 @@ local function claimGifts()
 	end)
 end
 task.spawn(claimGifts)
-
-
 getgenv().settings = {}
---Load Settings
+  --Load Settings
 if isfile("plsdonatesettings.txt") then
 	local sl, er = pcall(function()
 		getgenv().settings = httpservice:JSONDecode(readfile('plsdonatesettings.txt'))
@@ -170,7 +165,10 @@ local sNames = {
 	'autoNearReply',
 	'boothPosition',
 	'standingPosition',
-	'AnonymousMode'
+	'AnonymousMode',
+	'minimumPlayers',
+	'minimumDonated',
+	'boothSettings'
 }
 local sValues = {
 	true,
@@ -210,6 +208,9 @@ local sValues = {
 	3,
 	'Front',
 	false,
+	1,
+	0,
+	false
 }
 if #getgenv().settings ~= sNames then
 	for i, v in ipairs(sNames) do
@@ -219,8 +220,8 @@ if #getgenv().settings ~= sNames then
 	end
 	writefile('plsdonatesettings.txt', httpservice:JSONEncode(getgenv().settings))
 end
-
---Save Settings
+  
+  --Save Settings
 local settingsLock = true
 local function saveSettings()
 	if settingsLock == false then
@@ -229,6 +230,8 @@ local function saveSettings()
 	end
 end
 function serverHop()
+	local isVip = game:GetService('RobloxReplicatedStorage').GetServerType:InvokeServer()
+	if isVip == "VIPServer" then return end
 	local gameId
 	gameId = "8737602449"
 	if vcEnabled and getgenv().settings.vcServer then
@@ -262,12 +265,10 @@ function serverHop()
 		game:GetService("TeleportService"):TeleportToPlaceInstance(gameId, servers[math.random(1, #servers)], Players.LocalPlayer)
 	end)
 end
-
 local function waitServerHop()
 	task.wait(getgenv().settings.serverHopDelay * 60)
 	serverHop()
 end
-
 local function hopSet()
 	if hopTimer then
 		task.cancel(hopTimer)
@@ -276,8 +277,8 @@ local function hopSet()
 		hopTimer = task.spawn(waitServerHop)
 	end
 end
-
---Function to fix slider
+  
+  --Function to fix slider
 local sliderInProgress = false;
 local function slider(value, whichSlider)
 	if sliderInProgress then
@@ -296,8 +297,8 @@ local function slider(value, whichSlider)
 		return slider(getgenv().settings[whichSlider], whichSlider)
 	end
 end
-
---Booth update function
+  
+  --Booth update function
 local function update()
 	local text
 	local current = Players.LocalPlayer.leaderstats.Raised.Value
@@ -322,7 +323,7 @@ local function update()
 		text = string.gsub(getgenv().settings.customBoothText, "$C", current)
 		text = string.gsub (text, "$G", goal)
 		boothText = tostring('<font color="' .. getgenv().settings.hexBox .. '">' .. text .. '</font>')
-        --Updates the booth text
+		  --Updates the booth text
 		local myBooth = Players.LocalPlayer.PlayerGui.MapUIContainer.MapUI.BoothUI:FindFirstChild(tostring("BoothUI" .. unclaimed[1]))
 		if myBooth.Sign.TextLabel.Text ~= boothText then
 			if string.find(myBooth.Sign.TextLabel.Text, "# #") or string.find(myBooth.Sign.TextLabel.Text, "##") then
@@ -347,14 +348,12 @@ local function update()
 		end
 	end
 end
-
 local function begging()
 	while getgenv().settings.autoBeg do
 		game:GetService('ReplicatedStorage').DefaultChatSystemChatEvents.SayMessageRequest:FireServer(getgenv().settings.begMessage[math.random(#getgenv().settings.begMessage)], "All")
 		task.wait(getgenv().settings.begDelay)
 	end
 end
-
 local function webhook(msg)
 	httprequest({
 		Url = getgenv().settings.webhookBox,
@@ -367,11 +366,11 @@ local function webhook(msg)
 		}
 	})
 end
-    
---GUI
+	  
+  --GUI
 local Window = library:AddWindow("Loading...",
-{
-	main_color = Color3.fromRGB(0, 128, 0),
+  {
+	main_color = Color3.fromRGB(80, 80, 80),
 	min_size = Vector2.new(373, 433),
 	toggle_key = Enum.KeyCode.RightShift,
 })
@@ -381,9 +380,9 @@ local chatTab = Window:AddTab("Chat")
 local webhookTab = Window:AddTab("Webhook")
 local serverHopTab = Window:AddTab("Server")
 local otherTab = Window:AddTab("Other")
-
---Booth Settings
-
+local bThemes = game:GetService("Players").LocalPlayer.PlayerGui.ScreenGui.BoothSettings.ScrollingFrame.ChangeTheme.Themes
+  
+  --Booth Settings
 local textUpdateToggle = boothTab:AddSwitch("Text Update", function(bool)
 	if settingsLock then
 		return
@@ -402,11 +401,10 @@ local textUpdateDelay = boothTab:AddSlider("Text Update Delay (S)", function(x)
 	getgenv().settings.textUpdateDelay = x
 	coroutine.wrap(slider)(getgenv().settings.textUpdateDelay, "textUpdateDelay")
 end,
-{
+  {
 	["min"] = 0,
 	["max"] = 120
 })
-
 textUpdateDelay:Set((getgenv().settings.textUpdateDelay / 120) * 100)
 boothTab:AddLabel("Text Color:")
 local hexBox = boothTab:AddTextBox("Hex Codes Only", function(text)
@@ -422,7 +420,7 @@ local hexBox = boothTab:AddTextBox("Hex Codes Only", function(text)
 		update()
 	end
 end,
-{
+  {
 	["clear"] = false
 })
 hexBox.Text = getgenv().settings.hexBox
@@ -434,7 +432,7 @@ local goalBox = boothTab:AddTextBox("Numbers Only", function(text)
 		update()
 	end
 end,
-{
+  {
 	["clear"] = false
 })
 goalBox.Text = getgenv().settings.goalBox
@@ -443,29 +441,25 @@ local customBoothText = boothTab:AddConsole({
 	["y"] = 50,
 	["source"] = "",
 })
-
 boothTab:AddLabel("Standing Position:")
-
 local standingPos = boothTab:AddDropdown("[ " .. getgenv().settings.standingPosition .. " ]", function(t)
 	getgenv().settings.standingPosition = t
 	saveSettings()
-    if t == "Front" then
-        getgenv().settings.boothPosition = 3
-    elseif t == "Left" then
-        getgenv().settings.boothPosition = -6
-    elseif t == "Right" then
-        getgenv().settings.boothPosition = 6
-    else
-        getgenv().settings.boothPosition = -5.5
-    end
-    saveSettings()
+	if t == "Front" then
+		getgenv().settings.boothPosition = 3
+	elseif t == "Left" then
+		getgenv().settings.boothPosition = -6
+	elseif t == "Right" then
+		getgenv().settings.boothPosition = 6
+	else
+		getgenv().settings.boothPosition = -5.5
+	end
+	saveSettings()
 end)
-
 standingPos:Add('Front')
 standingPos:Add('Left')
 standingPos:Add('Right')
 standingPos:Add('Behind')
-
 customBoothText:Set(getgenv().settings.customBoothText)
 boothTab:AddButton("Save", function()
 	if #customBoothText:Get() > 221 then
@@ -480,11 +474,10 @@ boothTab:AddButton("Save", function()
 		update()
 	end
 end)
-
 local helpLabel = boothTab:AddLabel("$C = Current, $G = Goal, 221 Character Limit")
 helpLabel.TextSize = 9
 helpLabel.TextXAlignment = Enum.TextXAlignment.Center
---Sign Settings
+  --Sign Settings
 pcall(function()
 	if game:GetService("MarketplaceService"):UserOwnsGamePassAsync(Players.LocalPlayer.UserId, 28460459) then
 		signPass = true
@@ -528,7 +521,7 @@ if signPass then
 			end
 		end
 	end,
-    {
+	  {
 		["clear"] = false
 	})
 	signHexBox.Text = getgenv().settings.signHexBox
@@ -554,12 +547,11 @@ if signPass then
 	local signHelpLabel = signTab:AddLabel("$C = Current, $G = Goal, 221 Character Limit")
 	signHelpLabel.TextSize = 9
 	signHelpLabel.TextXAlignment = Enum.TextXAlignment.Center
-    
 else
 	signTab:AddLabel('Requires Sign Gamepass')
 end
-
---Chat Settings
+  
+  --Chat Settings
 local autoThanks = chatTab:AddSwitch("Auto Thank You", function(bool)
 	getgenv().settings.autoThanks = bool
 	saveSettings()
@@ -585,7 +577,7 @@ local thanksDelay = chatTab:AddSlider("Thanks Delay (S)", function(x)
 	getgenv().settings.thanksDelay = x
 	coroutine.wrap(slider)(getgenv().settings.thanksDelay, "thanksDelay")
 end,
-{
+  {
 	["min"] = 1,
 	["max"] = 120
 })
@@ -597,7 +589,7 @@ local begDelay = chatTab:AddSlider("Begging Delay (S)", function(x)
 	getgenv().settings.begDelay = x
 	coroutine.wrap(slider)(getgenv().settings.begDelay, "begDelay")
 end,
-{
+  {
 	["min"] = 1,
 	["max"] = 300
 })
@@ -638,9 +630,9 @@ bm:AddButton("Save", function()
 	getgenv().settings.begMessage = bsplit
 	saveSettings()
 end)
-
-
---Webhook Settings
+  
+  
+  --Webhook Settings
 local webhookToggle = webhookTab:AddSwitch("Discord Webhook Notifications", function(bool)
 	getgenv().settings.webhookToggle = bool
 	saveSettings()
@@ -652,20 +644,19 @@ local webhookBox = webhookTab:AddTextBox("Webhook URL", function(text)
 		saveSettings()
 	end
 end,
-{
+  {
 	["clear"] = false
 })
-
 webhookBox.Text = getgenv().settings.webhookBox
 webhookTab:AddLabel('Press Enter to Save')
 webhookTab:AddButton("Test", function()
 	if getgenv().settings.webhookBox then
-		webhook("dotgg | webhook works")
+		webhook("webhook works | dotgg")
 	end
 end)
-
-
---Server Hop Settings
+  
+  
+  --Server Hop Settings
 pcall(function()
 	if game:GetService("VoiceChatService"):IsVoiceEnabledForUserIdAsync(Players.LocalPlayer.UserId) then
 		vcEnabled = true
@@ -679,6 +670,7 @@ local serverHopToggle = serverHopTab:AddSwitch("Auto Server Hop", function(bool)
 	hopSet()
 	saveSettings()
 end)
+serverHopTab:AddLabel("Server hop timer resets after donation")
 serverHopToggle:Set(getgenv().settings.serverHopToggle)
 local serverHopDelay = serverHopTab:AddSlider("Server Hop Delay (M)", function(x)
 	if settingsLock then
@@ -687,12 +679,60 @@ local serverHopDelay = serverHopTab:AddSlider("Server Hop Delay (M)", function(x
 	getgenv().settings.serverHopDelay = x
 	coroutine.wrap(slider)(getgenv().settings.serverHopDelay, "serverHopDelay")
 end,
-{
+  {
 	["min"] = 1,
 	["max"] = 120
 })
+
 serverHopDelay:Set((getgenv().settings.serverHopDelay / 120) * 100)
-serverHopTab:AddLabel("Timer resets after donation")
+
+local minPlrs = serverHopTab:AddSlider('Minimum players',function(swqe)
+	if settingsLock then return end
+	getgenv().settings.minimumPlayers = swqe
+	coroutine.wrap(slider)(getgenv().settings.minimumPlayers, "minimumPlayers")
+end,
+  {
+	['min'] = 1,
+	['max'] = 28
+})
+
+
+minPlrs:Set(getgenv().settings.minimumPlayers)
+
+local minDonated = serverHopTab:AddSlider('Minimum donated',function(swqex)
+	if settingsLock then return end
+	getgenv().settings.minimumPlayers = swqex
+	coroutine.wrap(slider)(getgenv().settings.minimumDonated, "minimumDonated")
+end,
+  {
+	['min'] = 0,
+	['max'] = 20000
+})
+
+minDonated:Set(getgenv().settings.minimumDonated)
+
+task.spawn(function()
+	local werwe = false
+	for i,v in next, Players:GetPlayers() do
+		if (v:FindFirstChild('leaderstats') and v.leaderstats:FindFirstChild('Donated')) then
+			if v.leaderstats.Donated.Value > getgenv().settings.minimumDonated and v ~= Players.LocalPlayer then
+				werwe = true
+			end
+		end
+	end
+	if werwe == false then
+		serverHop()
+	end
+end)
+
+task.spawn(function()
+	local sadwe = false
+	local playersAmount = #Players:GetPlayers()
+    if playersAmount < getgenv().settings.minimumPlayers then
+		serverHop()
+	end
+end)
+
 if vcEnabled then
 	local vcToggle = serverHopTab:AddSwitch("Voice Chat Servers", function(bool)
 		if settingsLock then
@@ -703,18 +743,15 @@ if vcEnabled then
 	end)
 	vcToggle:Set(getgenv().settings.vcServer)
 end
-
 local alhop = serverHopTab:AddSwitch("Random Hop", function(bool)
 	getgenv().settings.AlternativeHop = bool
 	saveSettings()
 end)
-
 alhop:Set(getgenv().settings.AlternativeHop)
-
 serverHopTab:AddButton("Server Hop", function()
 	serverHop()
 end)
---Other tab
+  --Other tab
 otherTab:AddLabel('Dance:')
 local danceDropdown = otherTab:AddDropdown("[ " .. getgenv().settings.danceChoice .. " ]", function(object)
 	if settingsLock then
@@ -743,36 +780,52 @@ local render = otherTab:AddSwitch("Disable Rendering", function(bool)
 		game:GetService("RunService"):Set3dRenderingEnabled(true)
 	end
 end)
-
 local jumpswitch = otherTab:AddSwitch("Donation Jump", function(bool)
 	getgenv().settings.donationJump = bool
 	saveSettings()
 end)
-
 jumpswitch:Set(getgenv().settings.donationJump)
-
 local autoReply = otherTab:AddSwitch("Auto Reply [Experimental]", function(bool)
-    getgenv().settings.autoNearReply = bool
+	getgenv().settings.autoNearReply = bool
 	saveSettings()
 end)
-
 autoReply:Set(getgenv().settings.autoNearReply)
-
-local anMode = otherTab:AddSwitch('Anonymous Mode',function(bool)
+local anMode = otherTab:AddSwitch('Anonymous Mode', function(bool)
 	getgenv().settings.AnonymousMode = bool
 	if getgenv().settings.AnonymousMode then
 		require(game:GetService('ReplicatedStorage').Remotes).Event('SetDonatedVisibility'):FireServer(false)
 	else
 		require(game:GetService('ReplicatedStorage').Remotes).Event('SetDonatedVisibility'):FireServer(true)
-	 end
+	end
 	saveSettings()
 end)
-
 anMode:Set(getgenv().settings.AnonymousMode)
 
 if getgenv().settings.AnonymousMode then
-   require(game:GetService('ReplicatedStorage').Remotes).Event('SetDonatedVisibility'):FireServer(false)
+	require(game:GetService('ReplicatedStorage').Remotes).Event('SetDonatedVisibility'):FireServer(false)
 end
+
+function startBoothSwitching()
+	while task.wait() do
+		if not getgenv().settings.boothSwitcher then break end
+		for i,v in next, bThemes:GetChildren() do
+			if v:IsA("TextButton") and v.Visible == true and getgenv().settings.boothSwitcher then
+			   require(game:GetService('ReplicatedStorage').Remotes).Event("EditBoothModel"):FireServer(v.Name)
+			   task.wait(3)
+			end
+		end
+	end
+end
+
+local boothSwitch = otherTab:AddSwitch('Booth Switcher',function(bool)
+	getgenv().settings.boothSwitcher = bool
+	task.spawn(function()
+		startBoothSwitching()
+	end)
+	saveSettings()
+end)
+
+boothSwitch:Set(getgenv().settings.boothSwitcher)
 
 render:Set(getgenv().settings.render)
 if setfpscap and type(setfpscap) == "function" then
@@ -784,19 +837,18 @@ if setfpscap and type(setfpscap) == "function" then
 		setfpscap(x)
 		coroutine.wrap(slider)(getgenv().settings.fpsLimit, "fpsLimit")
 	end,
-    {
+	  {
 		["min"] = 1,
 		["max"] = 60
 	})
 	fpsLimit:Set((getgenv().settings.fpsLimit / 60) * 100)
 	setfpscap(getgenv().settings.fpsLimit)
 end
-
 boothTab:Show()
 library:FormatWindows()
 settingsLock = false
-
---Finds unclaimed booths
+  
+  --Finds unclaimed booths
 local function findUnclaimed()
 	for i, v in pairs(Players.LocalPlayer.PlayerGui.MapUIContainer.MapUI.BoothUI:GetChildren()) do
 		if (v.Details.Owner.Text == "unclaimed") then
@@ -808,7 +860,7 @@ if not pcall(findUnclaimed) then
 	serverHop()
 end
 local claimCount = #unclaimed
---Claim booth function
+  --Claim booth function
 local function boothclaim()
 	require(game:GetService('ReplicatedStorage').Remotes).Event("ClaimBooth"):InvokeServer(unclaimed[1])
 	if not string.find(Players.LocalPlayer.PlayerGui.MapUIContainer.MapUI.BoothUI:FindFirstChild(tostring("BoothUI" .. unclaimed[1])).Details.Owner.Text, Players.LocalPlayer.DisplayName) then
@@ -818,7 +870,7 @@ local function boothclaim()
 		end
 	end
 end
---Checks if booth claim fails
+  --Checks if booth claim fails
 while not pcall(boothclaim) do
 	if errCount >= claimCount then
 		serverHop()
@@ -826,42 +878,41 @@ while not pcall(boothclaim) do
 	table.remove(unclaimed, 1)
 	errCount = errCount + 1
 end
-
 hopSet()
 local function walkToBooth()
-    local theCframe
-    if string.find(tostring(getgenv().settings.boothPosition), "6") then
-        theCframe = CFrame.new(getgenv().settings.boothPosition, 0, 0)
-    else 
-        theCframe = CFrame.new(0, 0, getgenv().settings.boothPosition)
-    end
-    local boothPos
-    for i,v in ipairs(game:GetService("Workspace").BoothInteractions:GetChildren()) do
-        if v:GetAttribute("BoothSlot") == unclaimed[1] then
-            boothPos = v.CFrame * theCframe
-            break
-        end
-    end
-    game:GetService('VirtualInputManager'):SendKeyEvent(true, "LeftControl", false, game)
-    local Controls = require(Players.LocalPlayer.PlayerScripts:WaitForChild("PlayerModule")):GetControls()
-    Controls:Disable()
-    local atBooth = false
-    game:GetService("Workspace").Map.Main.Bench:Destroy()
-    Players.LocalPlayer.Character.Humanoid:MoveTo(boothPos.Position)
-    Players.LocalPlayer.Character.Humanoid.MoveToFinished:Connect(function(reached)
-        atBooth = true
-    end)
-    repeat task.wait() until atBooth
-    Controls:Enable()
-    game:GetService('VirtualInputManager'):SendKeyEvent(false, "LeftControl", false, game)
-    Players.LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(Players.LocalPlayer.Character.HumanoidRootPart.Position, Vector3.new(40, 14, 101)))
+	local theCframe
+	if string.find(tostring(getgenv().settings.boothPosition), "6") then
+		theCframe = CFrame.new(getgenv().settings.boothPosition, 0, 0)
+	else
+		theCframe = CFrame.new(0, 0, getgenv().settings.boothPosition)
+	end
+	local boothPos
+	for i, v in ipairs(game:GetService("Workspace").BoothInteractions:GetChildren()) do
+		if v:GetAttribute("BoothSlot") == unclaimed[1] then
+			boothPos = v.CFrame * theCframe
+			break
+		end
+	end
+	game:GetService('VirtualInputManager'):SendKeyEvent(true, "LeftControl", false, game)
+	local Controls = require(Players.LocalPlayer.PlayerScripts:WaitForChild("PlayerModule")):GetControls()
+	Controls:Disable()
+	local atBooth = false
+	game:GetService("Workspace").Map.Main.Bench:Destroy()
+	Players.LocalPlayer.Character.Humanoid:MoveTo(boothPos.Position)
+	Players.LocalPlayer.Character.Humanoid.MoveToFinished:Connect(function(reached)
+		atBooth = true
+	end)
+	repeat
+		task.wait()
+	until atBooth
+	Controls:Enable()
+	game:GetService('VirtualInputManager'):SendKeyEvent(false, "LeftControl", false, game)
+	Players.LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(Players.LocalPlayer.Character.HumanoidRootPart.Position, Vector3.new(40, 14, 101)))
 end
 walkToBooth()
-
 if getgenv().settings.autoBeg then
 	spamming = task.spawn(begging)
 end
-
 local RaisedC = Players.LocalPlayer.leaderstats.Raised.value
 Players.LocalPlayer.leaderstats.Raised.Changed:Connect(function()
 	hopSet()
@@ -891,37 +942,43 @@ Players.LocalPlayer.leaderstats.Raised.Changed:Connect(function()
 	update()
 end)
 update()
-
 local msgdone = game:GetService('ReplicatedStorage').DefaultChatSystemChatEvents.OnMessageDoneFiltering
-local randommsgs = {'yes','ok','alr','yeah'}
+local randommsgs = {
+	'yes',
+	'ok',
+	'alr',
+	'yeah'
+}
 local messageRequest = game:GetService('ReplicatedStorage').DefaultChatSystemChatEvents.SayMessageRequest
 msgdone.OnClientEvent:Connect(function(msgdata)
 	local speaker = tostring(msgdata.FromSpeaker)
 	local message = string.lower(msgdata.Message)
 	task.wait(1.2)
 	local plrChatted = game:GetService('Players')[speaker] or nil
-	if (plrChatted and plrChatted == game:GetService('Players').LocalPlayer) or getgenv().settings.autoNearReply == false or not plrChatted then return end
-	local chatChar = plrChatted.Character
-	if (plrChatted.Character and plrChatted.Character.Humanoid.RootPart) then
-		local root = chatChar.Humanoid.RootPart
-		if (root.Position - game:GetService('Players').LocalPlayer.Character.Humanoid.RootPart.Position).Magnitude < 10 then
-			if message == 'hello' or message == 'hi' or message == 'sup' then
-				messageRequest:FireServer("hello", 'All')
-			elseif string.find(message, 'jump') then
-				messageRequest:FireServer('ok','All')
-			elseif string.find(message,'?') then
-				messageRequest:FireServer('yes','All')
-			else
-				messageRequest:FireServer(randommsgs[math.random(1,#randommsgs)],'All')
+	if (plrChatted and plrChatted == game:GetService('Players').LocalPlayer) or getgenv().settings.autoNearReply == false or not plrChatted then
+		return
+	end
+	pcall(function()
+		local chatChar = plrChatted.Character
+		if (plrChatted.Character and plrChatted.Character.Humanoid.RootPart) then
+			local root = chatChar.Humanoid.RootPart
+			if (root.Position - game:GetService('Players').LocalPlayer.Character.Humanoid.RootPart.Position).Magnitude < 10 then
+				if message == 'hello' or message == 'hi' or message == 'sup' then
+					messageRequest:FireServer("hello", 'All')
+				elseif string.find(message, 'jump') then
+					messageRequest:FireServer('ok', 'All')
+				elseif string.find(message, '?') then
+					messageRequest:FireServer('yes', 'All')
+				else
+					messageRequest:FireServer(randommsgs[math.random(1, #randommsgs)], 'All')
+				end
 			end
 		end
-	end
+	end)
 end)
-
 if game:GetService("CoreGui").imgui.Windows.Window.Title.Text == "Loading..." then
-	game:GetService("CoreGui").imgui.Windows.Window.Title.Text = "happy new year / dotgg"
+	game:GetService("CoreGui").imgui.Windows.Window.Title.Text = "dotgg | szze#6220"
 end
-
 while task.wait(getgenv().settings.serverHopDelay * 60) do
 	if not hopTimer then
 		hopSet()
