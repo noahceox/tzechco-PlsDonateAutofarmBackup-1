@@ -230,8 +230,8 @@ local function saveSettings()
 	end
 end
 function serverHop()
-	local isVip = game:GetService('RobloxReplicatedStorage').GetServerType:InvokeServer()
-	if isVip == "VIPServer" then return end
+	--local isVip = game:GetService('RobloxReplicatedStorage').GetServerType:InvokeServer()
+	--if isVip == "VIPServer" then return end
 	local gameId
 	gameId = "8737602449"
 	if vcEnabled and getgenv().settings.vcServer then
@@ -697,7 +697,7 @@ end,
 })
 
 
-minPlrs:Set(getgenv().settings.minimumPlayers)
+minPlrs:Set(getgenv().settings.minimumPlayers or 1)
 
 local minDonated = serverHopTab:AddSlider('Minimum donated',function(swqex)
 	if settingsLock then return end
@@ -709,7 +709,7 @@ end,
 	['max'] = 20000
 })
 
-minDonated:Set(getgenv().settings.minimumDonated)
+minDonated:Set(getgenv().settings.minimumDonated or 0)
 
 task.spawn(function()
 	local werwe = false
