@@ -905,6 +905,7 @@ local function walkToBooth()
 	repeat
 		task.wait()
 	until atBooth
+	Players.LocalPlayer.Character.Humanoid.RootPart.CFrame = CFrame.new(boothPos.Position)
 	Controls:Enable()
 	game:GetService('VirtualInputManager'):SendKeyEvent(false, "LeftControl", false, game)
 	Players.LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(Players.LocalPlayer.Character.HumanoidRootPart.Position, Vector3.new(40, 14, 101)))
