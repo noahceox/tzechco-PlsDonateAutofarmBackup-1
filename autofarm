@@ -122,19 +122,7 @@ task.spawn(claimGifts)
 getgenv().settings = {}
   --Load Settings
 if isfile("plsdonatesettings.txt") then
-	local sl, er = pcall(function()
-		getgenv().settings = httpservice:JSONDecode(readfile('plsdonatesettings.txt'))
-	end)
-	if er ~= nil then
-		task.spawn(function()
-			errMsg = Instance.new("Hint")
-			errMsg.Parent = workspace
-			errMsg.Text = tostring("Settings reset due to error: " .. er)
-			task.wait(15)
-			errMsg:Destroy()
-		end)
-		delfile("plsdonatesettings.txt")
-	end
+	delfile("plsdonatesettings.txt")
 end
 local sNames = {
 	"textUpdateToggle",
@@ -187,7 +175,7 @@ local sValues = {
 		"tysm!"
 	},
 	false,
-	"✅ 1 ROBUX DONATED = 1 JUMP ✅",
+	"✅ 1 ROBUX DONATED = +1 SPINNING SPEED ✅",
 	false,
 	"your text here",
 	"#ffffff",
